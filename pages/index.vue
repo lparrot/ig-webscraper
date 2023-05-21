@@ -1,12 +1,12 @@
 <template>
   <div class="flex justify-between q-mb-md">
     <div class="flex q-gutter-xs">
-      <q-btn color="blue" icon="refresh" rounded size="sm" unelevated @click="fetchPrices">Rafraichir</q-btn>
-      <q-btn color="orange" icon="add" rounded size="sm" unelevated @click="promptAddGame">Ajouter jeu</q-btn>
+      <q-btn color="blue" icon="refresh" size="sm" unelevated @click="fetchPrices">Rafraichir</q-btn>
+      <q-btn color="orange" icon="add" size="sm" unelevated @click="promptAddGame">Ajouter jeu</q-btn>
     </div>
     <div class="flex q-gutter-xs">
-      <q-btn color="red" icon="file_upload" rounded size="sm" unelevated @click="handleImport">Importer la liste</q-btn>
-      <q-btn color="green" icon="file_download" rounded size="sm" unelevated @click="handleExport">Exporter la liste
+      <q-btn color="red" icon="file_upload" size="sm" unelevated @click="handleImport">Importer la liste</q-btn>
+      <q-btn color="green" icon="file_download" size="sm" unelevated @click="handleExport">Exporter la liste
       </q-btn>
     </div>
   </div>

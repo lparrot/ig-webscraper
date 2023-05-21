@@ -37,8 +37,9 @@
   },
   "publish": {
     "provider": "github",
-    "token": "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",
     "owner": "lparrot",
-    "repo": "ig-webscraper"
+    "token": "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",
+    "repo": "ig-webscraper",
+    "releaseType": "release"
   }
 }

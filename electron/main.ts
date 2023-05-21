@@ -1,5 +1,5 @@
 import path from "path";
-import {app, BrowserWindow, ipcMain, session} from "electron";
+import {app, BrowserWindow} from "electron";
 import {autoUpdater} from 'electron-updater'
 
 process.env.ROOT = path.join(__dirname, '..')
@@ -12,10 +12,6 @@ process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 let win: BrowserWindow
 
 const preload = path.join(process.env.DIST, 'preload.js')
-
-function sendStatusToWindow(type: string, data: any) {
-    ipcMain.emit('message', {type, data});
-}
 
 autoUpdater.on('checking-for-update', () => {
     sendStatusToWindow('update', 'Checking for update...');
@@ -43,6 +39,10 @@ autoUpdater.on('update-downloaded', (info) => {
     sendStatusToWindow('update', 'Update downloaded');
 });
 
+function sendStatusToWindow(type: string, data: any) {
+    win?.webContents?.send('message', {type, data});
+}
+
 async function bootstrap() {
     win = new BrowserWindow({
         webPreferences: {
@@ -55,14 +55,17 @@ async function bootstrap() {
     })
 
     if (process.env.VITE_DEV_SERVER_URL != null) {
-        await session.defaultSession.loadExtension(path.join(process.env.ROOT!!!, 'extensions', 'allow_cors'))
+        // await session.defaultSession.loadExtension(path.join(process.env.ROOT!!!, 'extensions', 'allow_cors'))
         await win.loadURL(process.env.VITE_DEV_SERVER_URL)
         win.webContents.toggleDevTools()
     } else {
         await win.loadFile(path.join(process.env.VITE_PUBLIC!, 'index.html'))
     }
 
-    await autoUpdater.checkForUpdatesAndNotify()
+    await autoUpdater.checkForUpdatesAndNotify({
+        title: 'Instant-Gaming Webscraper',
+        body: 'Une nouvelle version est disponible pour téléchargement.'
+    })
 }
 
 app.whenReady().then(bootstrap)

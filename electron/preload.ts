@@ -10,7 +10,7 @@ contextBridge.exposeInMainWorld('app', {
         ipcRenderer.on('message', async (event, {type, data}) => {
             await callback({type, data})
         })
-    },
+    }
 })
 
 declare global {
