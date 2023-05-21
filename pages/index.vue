@@ -1,13 +1,24 @@
 <template>
-  <div class="flex q-gutter-xs q-mb-md">
-    <q-btn color="primary" icon="refresh" @click="fetchPrices">Rafraichir</q-btn>
-    <q-btn color="orange" icon="add" @click="promptAddGame">Ajouter jeu</q-btn>
+  <div class="flex justify-between q-mb-md">
+    <div class="flex q-gutter-xs">
+      <q-btn color="blue" icon="refresh" rounded size="sm" unelevated @click="fetchPrices">Rafraichir</q-btn>
+      <q-btn color="orange" icon="add" rounded size="sm" unelevated @click="promptAddGame">Ajouter jeu</q-btn>
+    </div>
+    <div class="flex q-gutter-xs">
+      <q-btn color="red" icon="file_upload" rounded size="sm" unelevated @click="handleImport">Importer la liste</q-btn>
+      <q-btn color="green" icon="file_download" rounded size="sm" unelevated @click="handleExport">Exporter la liste
+      </q-btn>
+    </div>
   </div>
 
-  <q-table :columns="columns" :pagination="{rowsPerPage: 0, sortBy: 'prices'}" :rows="game_infos" binary-state-sort bordered dense flat
+  <q-table :columns="columns" :pagination="{rowsPerPage: 0, sortBy: 'prices'}" :rows="game_infos" binary-state-sort
+           bordered dense flat
            row-key="name">
     <template #body="props">
       <q-tr :props="props">
+        <q-td key="actions" :props="props" style="width: 1px">
+          <q-btn color="red" dense icon="delete" size="sm" @click="handleDelete(props.row)"></q-btn>
+        </q-td>
         <q-td key="img" :props="props" style="width: 96px">
           <q-img :src="props.row.img" alt="image" class="cursor-pointer" loading="lazy" @click="openLink(props.row)"/>
         </q-td>
@@ -24,7 +35,7 @@
               <QIcon
                   v-if="props.row.prices[props.row.prices.length - 1] > props.row.prices[props.row.prices.length - 2]"
                   color="red" name="north_east"></QIcon>
-              <QIcon v-else color="red" name="south_east"></QIcon>
+              <QIcon v-else color="green" name="south_east"></QIcon>
             </div>
             <div>
               <span>{{ props.row.prices[props.row.prices.length - 1] }} €</span>
@@ -49,6 +60,7 @@ const $q = useQuasar()
 const game_infos = ref<GameInfoShow[]>([])
 
 const columns = ref([
+  {name: 'actions', field: 'actions', label: ''},
   {name: 'img', field: 'img', label: ''},
   {name: 'name', field: 'name', label: 'Nom du jeu', sortable: true, align: 'left'},
   {
@@ -66,17 +78,38 @@ const search = async (query: string) => {
   const $ = load(content)
 }
 
+const handleDelete = async (game: GameInfoShow) => {
+  await $q.dialog({
+    title: 'Confirmation',
+    message: 'Voulez vous supprimer ce jeu de la liste ?',
+    cancel: true,
+    persistent: true
+  })
+      .onOk(async (payload: string) => {
+        await $db.gameInfos.delete(game.id)
+        game_infos.value = game_infos.value.filter(it => it.id !== game.id)
+      })
+}
+
+const handleImport = async () => {
+  alert('Fonctionnalité en cours de développement')
+}
+
+const handleExport = async () => {
+  alert('Fonctionnalité en cours de développement')
+}
+
 const openLink = async (game: GameInfoShow) => {
   await window.app.openLink(game.url)
 }
 
 const promptAddGame = async () => {
   await $q.dialog({
-    title: 'Prompt',
-    message: 'What is your name?',
+    title: 'Ajouter un jeu',
+    message: `Donnez l'url de la page du jeu sur le site Instant-Gaming`,
     prompt: {
       model: '',
-      type: 'text' // optional
+      type: 'text'
     },
     cancel: true,
     persistent: true

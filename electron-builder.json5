@@ -34,5 +34,11 @@
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false
+  },
+  "publish": {
+    "provider": "github",
+    "token": "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",
+    "owner": "lparrot",
+    "repo": "ig-webscraper"
   }
 }

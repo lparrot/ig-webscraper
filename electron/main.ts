@@ -1,5 +1,6 @@
 import path from "path";
-import {app, BrowserWindow, session} from "electron";
+import {app, BrowserWindow, ipcMain, session} from "electron";
+import {autoUpdater} from 'electron-updater'
 
 process.env.ROOT = path.join(__dirname, '..')
 process.env.DIST = path.join(process.env.ROOT, 'dist-electron')
@@ -11,6 +12,36 @@ process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 let win: BrowserWindow
 
 const preload = path.join(process.env.DIST, 'preload.js')
+
+function sendStatusToWindow(type: string, data: any) {
+    ipcMain.emit('message', {type, data});
+}
+
+autoUpdater.on('checking-for-update', () => {
+    sendStatusToWindow('update', 'Checking for update...');
+})
+autoUpdater.on('update-available', (info) => {
+    sendStatusToWindow('update', 'Update available.');
+})
+
+autoUpdater.on('update-not-available', (info) => {
+    sendStatusToWindow('update', 'Update not available.');
+})
+
+autoUpdater.on('error', (err) => {
+    sendStatusToWindow('update', 'Error in auto-updater. ' + err);
+})
+
+autoUpdater.on('download-progress', (progressObj) => {
+    let log_message = "Download speed: " + progressObj.bytesPerSecond;
+    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    sendStatusToWindow('update', log_message);
+})
+
+autoUpdater.on('update-downloaded', (info) => {
+    sendStatusToWindow('update', 'Update downloaded');
+});
 
 async function bootstrap() {
     win = new BrowserWindow({
@@ -30,6 +61,8 @@ async function bootstrap() {
     } else {
         await win.loadFile(path.join(process.env.VITE_PUBLIC!, 'index.html'))
     }
+
+    await autoUpdater.checkForUpdatesAndNotify()
 }
 
 app.whenReady().then(bootstrap)
