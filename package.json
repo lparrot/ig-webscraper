@@ -1,0 +1,36 @@
+{
+  "name": "ig-webscraper",
+  "description": "IG Webscraper",
+  "version": "1.0.0",
+  "author": "laurent.parrot78@gmail.com",
+  "private": true,
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "build": "nuxi build --prerender && electron-builder",
+    "dev": "nuxt prepare && nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "prepare": "nuxt prepare",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.31",
+    "@types/node": "^18",
+    "electron": "^24.3.1",
+    "electron-builder": "^23.6.0",
+    "electron-github-autoupdater": "^2.0.0",
+    "nuxt": "^3.5.0",
+    "nuxt-electron": "^0.4.5",
+    "nuxt-quasar-ui": "^1.7.3",
+    "vite-electron-plugin": "^0.8.2",
+    "vite-plugin-electron-renderer": "^0.14.4"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.16.4",
+    "cheerio": "^1.0.0-rc.12",
+    "dexie": "^3.2.3",
+    "quasar": "^2.12.0",
+    "sass": "^1.62.1",
+    "tiny-cookie": "^2.4.1"
+  }
+}
