@@ -30,16 +30,21 @@
     "artifactName": "${productName}_${version}.${ext}"
   },
   "nsis": {
-    "oneClick": false,
+    "installerIcon": "icon.ico",
+    "uninstallerIcon": "icon.ico",
+    "oneClick": true,
+    "allowToChangeInstallationDirectory": false,
     "perMachine": false,
-    "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false
   },
   "publish": {
     "provider": "github",
     "owner": "lparrot",
-    "token": "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",
+    "token": "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",
     "repo": "ig-webscraper",
     "releaseType": "release"
-  }
+  },
+  extraResources: [
+    'electron-extras/**/*'
+  ]
 }

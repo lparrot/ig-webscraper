@@ -1,6 +1,10 @@
 import path from "path";
-import {app, BrowserWindow} from "electron";
-import {autoUpdater} from 'electron-updater'
+import {app, BrowserWindow, ipcMain, Menu, nativeImage, Tray} from "electron";
+import {Server, Socket} from 'socket.io'
+import {useAutoUpdater} from "./services/auto-updater.service";
+import {autoUpdater} from "electron-updater";
+
+const isDevelopment = process.env.NODE_ENV === 'development'
 
 process.env.ROOT = path.join(__dirname, '..')
 process.env.DIST = path.join(process.env.ROOT, 'dist-electron')
@@ -10,40 +14,21 @@ process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 
 let win: BrowserWindow
+let tray: Tray
+export const SOCKET_IO_PORT = 8000
+export let io: Server | null = null
+export let socket: Socket | null = null
 
 const preload = path.join(process.env.DIST, 'preload.js')
-
-autoUpdater.on('checking-for-update', () => {
-    sendStatusToWindow('update', 'Checking for update...');
-})
-autoUpdater.on('update-available', (info) => {
-    sendStatusToWindow('update', 'Update available.');
-})
-
-autoUpdater.on('update-not-available', (info) => {
-    sendStatusToWindow('update', 'Update not available.');
-})
-
-autoUpdater.on('error', (err) => {
-    sendStatusToWindow('update', 'Error in auto-updater. ' + err);
-})
-
-autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = "Download speed: " + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    sendStatusToWindow('update', log_message);
-})
-
-autoUpdater.on('update-downloaded', (info) => {
-    sendStatusToWindow('update', 'Update downloaded');
-});
-
-function sendStatusToWindow(type: string, data: any) {
-    win?.webContents?.send('message', {type, data});
-}
+const icon = nativeImage.createFromPath(path.join(process.resourcesPath, 'electron-extras', 'icon.png'))
 
 async function bootstrap() {
+    io = new Server(SOCKET_IO_PORT, {})
+
+    io.on('connection', (socket_io) => {
+        socket = socket_io
+    })
+
     win = new BrowserWindow({
         webPreferences: {
             preload,
@@ -54,18 +39,39 @@ async function bootstrap() {
         },
     })
 
+    win.setIcon(icon)
+
     if (process.env.VITE_DEV_SERVER_URL != null) {
-        // await session.defaultSession.loadExtension(path.join(process.env.ROOT!!!, 'extensions', 'allow_cors'))
         await win.loadURL(process.env.VITE_DEV_SERVER_URL)
-        win.webContents.toggleDevTools()
+        await win.webContents.toggleDevTools()
     } else {
         await win.loadFile(path.join(process.env.VITE_PUBLIC!, 'index.html'))
     }
 
-    await autoUpdater.checkForUpdatesAndNotify({
-        title: 'Instant-Gaming Webscraper',
-        body: 'Une nouvelle version est disponible pour téléchargement.'
-    })
+    win.removeMenu()
+    win.maximize()
+
+    createTray()
 }
 
 app.whenReady().then(bootstrap)
+
+process.on('uncaughtException', (error) => {
+    console.error(error)
+})
+
+ipcMain.on('front:ready', async (event) => {
+    await useAutoUpdater()
+})
+
+const createTray = () => {
+    tray = new Tray(icon)
+
+    const contextMenu = Menu.buildFromTemplate([
+        {label: 'Vérifier les mises à jour', type: 'normal', click: async () => await autoUpdater.checkForUpdates()},
+        {label: `Quitter l'application`, type: 'normal', click: () => app.quit()}
+    ])
+
+    tray.setContextMenu(contextMenu)
+    tray.setToolTip('Instant-Gaming Webscraper')
+}
