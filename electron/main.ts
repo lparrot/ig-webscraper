@@ -8,9 +8,7 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 process.env.ROOT = path.join(__dirname, '..')
 process.env.DIST = path.join(process.env.ROOT, 'dist-electron')
-process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
-    ? path.join(process.env.ROOT, 'public')
-    : path.join(process.env.ROOT, '.output/public')
+process.env.VITE_PUBLIC = path.join(process.env.ROOT, process.env.VITE_DEV_SERVER_URL ? 'public' : '.output/public')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 
 let win: BrowserWindow
@@ -20,7 +18,7 @@ export let io: Server | null = null
 export let socket: Socket | null = null
 
 const preload = path.join(process.env.DIST, 'preload.js')
-const icon = nativeImage.createFromPath(path.join(process.resourcesPath, 'electron-extras', 'icon.png'))
+const iconPath = isDevelopment ? path.join('electron-extras', 'icon.png') : path.join(process.resourcesPath, 'electron-extras', 'icon.png')
 
 async function bootstrap() {
     io = new Server(SOCKET_IO_PORT, {})
@@ -31,6 +29,7 @@ async function bootstrap() {
 
     win = new BrowserWindow({
         webPreferences: {
+            devTools: isDevelopment,
             preload,
             nodeIntegrationInWorker: true,
             contextIsolation: true,
@@ -39,7 +38,7 @@ async function bootstrap() {
         },
     })
 
-    win.setIcon(icon)
+    win.setIcon(nativeImage.createFromPath(iconPath))
 
     if (process.env.VITE_DEV_SERVER_URL != null) {
         await win.loadURL(process.env.VITE_DEV_SERVER_URL)
@@ -65,7 +64,7 @@ ipcMain.on('front:ready', async (event) => {
 })
 
 const createTray = () => {
-    tray = new Tray(icon)
+    tray = new Tray(nativeImage.createFromPath(iconPath))
 
     const contextMenu = Menu.buildFromTemplate([
         {label: 'Vérifier les mises à jour', type: 'normal', click: async () => await autoUpdater.checkForUpdates()},

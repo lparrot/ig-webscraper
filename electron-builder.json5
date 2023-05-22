@@ -40,7 +40,7 @@
   "publish": {
     "provider": "github",
     "owner": "lparrot",
-    "token": "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",
+    "token": "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",
     "repo": "ig-webscraper",
     "releaseType": "release"
   },
