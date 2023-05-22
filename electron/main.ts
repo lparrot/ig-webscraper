@@ -47,7 +47,10 @@ async function bootstrap() {
         await win.loadFile(path.join(process.env.VITE_PUBLIC!, 'index.html'))
     }
 
-    win.removeMenu()
+    if (!isDevelopment) {
+        win.removeMenu()
+    }
+
     win.maximize()
 
     createTray()

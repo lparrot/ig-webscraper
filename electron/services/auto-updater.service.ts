@@ -7,28 +7,28 @@ export const useAutoUpdater = async () => {
     autoUpdater.logger = log
 
     autoUpdater.on('checking-for-update', () => {
-        sendStatusToWindow('update:checking-for-update');
+        sendIOMessage('update:checking-for-update');
     })
 
     autoUpdater.on('update-available', (info) => {
-        sendStatusToWindow('update:update-available', info);
+        sendIOMessage('update:update-available', info);
     })
 
     autoUpdater.on('update-not-available', (info) => {
-        sendStatusToWindow('update:update-not-available', info);
+        sendIOMessage('update:update-not-available', info);
     })
 
     autoUpdater.on('error', (err) => {
         dialog.showErrorBox('Erreur: ', err == null ? 'unknown' : (err.stack || err).toString())
-        sendStatusToWindow('update:error', err);
+        sendIOMessage('update:error', err);
     })
 
     autoUpdater.on('download-progress', (progressObj) => {
-        sendStatusToWindow('update:download-progress', progressObj);
+        sendIOMessage('update:download-progress', progressObj);
     })
 
     autoUpdater.on('update-downloaded', (info) => {
-        sendStatusToWindow('update:update-downloaded', info);
+        sendIOMessage('update:update-downloaded', info);
         const dialogOpts = {
             type: 'info',
             buttons: ['Redémarrer maintenant', 'Installer plus tard...'],
@@ -42,7 +42,7 @@ export const useAutoUpdater = async () => {
         })
     });
 
-    function sendStatusToWindow(type: string, data?: any) {
+    function sendIOMessage(type: string, data?: any) {
         socket?.emit('message', {type, data});
     }
 

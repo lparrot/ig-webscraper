@@ -11,21 +11,25 @@
 </template>
 
 <script lang="ts" setup>
+const io = useSocketIo()
 const $q = useQuasar()
 
 io.on('message', ({type, data}) => {
   switch (type) {
-    case 'update:checking-for-update':
-      $q.notify({message: 'Vérification des mises à jour.', color: 'blue', position: 'bottom-right'})
-      break
-    case 'update:update-not-available':
-      $q.notify({message: 'Aucune mise à jour disponible.', color: 'blue', position: 'bottom-right'})
-      break
     case 'update:update-available':
       $q.notify({
         message: 'Une mise à jour est disponible. Téléchargement en cours ...',
         color: 'blue',
-        position: 'bottom-right'
+        position: 'bottom-right',
+        group: false
+      })
+      break
+    case 'update:update-not-available':
+      $q.notify({
+        message: 'Aucune mise à jour disponible.',
+        color: 'blue',
+        position: 'bottom-right',
+        group: false
       })
       break
     default:

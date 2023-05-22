@@ -1,42 +1,17 @@
-# Nuxt 3 Minimal Starter
+# Instant-Gaming Webscraper
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+## Compilation
 
-## Setup
+### Création et utilisation du token Github pour la publication
 
-Make sure to install the dependencies:
+- Se connecter à l'adresse : [https://github.com/settings/tokens/new](https://github.com/settings/tokens/new`)
+- Créer un token ayant tout le scope `repo`
 
-```bash
-# yarn
-yarn install
+- Copier le token puis remplacer `<YOUR_TOKEN_HERE>` par le token et executer la ligne de commande dans un editeur
+  PowerShell
 
-# npm
-npm install
-
-# pnpm
-pnpm install
+```shell
+[Environment]::SetEnvironmentVariable("GH_TOKEN","<YOUR_TOKEN_HERE>","User")
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`
-
-```bash
-npm run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-npm run build
-```
-
-Locally preview production build:
-
-```bash
-npm run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- Redémarrer le terminal/l'IDE pour prendre en compte les dernières variables d'environnement
