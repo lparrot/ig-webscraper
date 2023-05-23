@@ -12,9 +12,13 @@ const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginCom
       </q-card-section>
 
       <q-card-section class="q-pt-none">
-        <div v-for="price in game?.prices">
-          {{ price.toFixed(2) }} €
-        </div>
+        <q-list class="rounded-borders" dense padding separator>
+          <q-item v-for="price in game?.prices" class="text-center">
+            <q-item-section>
+              {{ price.toFixed(2) }} €
+            </q-item-section>
+          </q-item>
+        </q-list>
       </q-card-section>
 
       <q-card-actions align="right">
