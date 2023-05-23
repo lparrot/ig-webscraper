@@ -108,7 +108,8 @@ const handleImport = async () => {
 }
 
 const handleExport = async () => {
-  alert('Fonctionnalité en cours de développement')
+  const games = await $db.gameInfos.toArray();
+  io.emit('action:export_file', games.map(it => it.url))
 }
 
 const openLink = async (game: GameInfoShow) => {

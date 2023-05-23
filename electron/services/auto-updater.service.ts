@@ -2,6 +2,7 @@ import {autoUpdater} from "electron-updater";
 import log from "electron-log";
 import {dialog} from "electron";
 import {socket} from "../main";
+import {useIoActions} from "./io-hooks";
 
 export const useAutoUpdater = async () => {
     autoUpdater.logger = log
@@ -45,6 +46,8 @@ export const useAutoUpdater = async () => {
     function sendIOMessage(type: string, data?: any) {
         socket?.emit('message', {type, data});
     }
+
+    await useIoActions()
 
     await autoUpdater.checkForUpdates()
 }
