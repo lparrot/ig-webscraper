@@ -51,7 +51,6 @@
 import {load} from "cheerio";
 import {DialogHistoPrice} from "#components";
 import {useIntervalFn} from "@vueuse/core";
-import {io} from "~/composables/useSocketIo";
 
 interface GameInfoShow extends GameInfo {
   nostock: boolean
@@ -105,13 +104,13 @@ const handleDelete = async (game: GameInfoShow) => {
 }
 
 const handleImport = async () => {
-  $q.loading.show()
-  io.emit('action:import_file', async (response: any) => {
+  socket.emit('action:import_file', async (response: any) => {
     if (response == null) {
       return
     }
 
     try {
+      $q.loading.show()
       const gameUrls = JSON.parse(response)
 
       if (Array.isArray(gameUrls)) {
@@ -123,7 +122,7 @@ const handleImport = async () => {
     } finally {
       $q.loading.hide()
       await fetchPrices()
-      io.emit('action:message', {
+      socket.emit('action:message', {
         title: 'Import terminé',
         message: 'Import terminé avec succès'
       })
@@ -133,7 +132,7 @@ const handleImport = async () => {
 
 const handleExport = async () => {
   const games = await $db.gameInfos.toArray();
-  io.emit('action:export_file', games.map(it => it.url))
+  socket.emit('action:export_file', games.map(it => it.url))
 }
 
 const openLink = async (game: GameInfoShow) => {

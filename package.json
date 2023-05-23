@@ -1,7 +1,7 @@
 {
   "name": "ig-webscraper",
   "description": "IG Webscraper",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "author": "laurent.parrot78@gmail.com",
   "private": true,
   "main": "dist-electron/main.js",

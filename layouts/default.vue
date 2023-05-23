@@ -2,7 +2,7 @@
   <q-layout>
     <q-page-container>
       <q-page padding>
-        <div class="text-h3">Instant-Gaming Webscraper - lauparr</div>
+        <div class="text-h4 q-mb-sm">Instant-Gaming Webscraper - v{{ info.version }}</div>
 
         <nuxt-page/>
       </q-page>
@@ -11,33 +11,15 @@
 </template>
 
 <script lang="ts" setup>
-const io = useSocketIo()
-const $q = useQuasar()
+import {Ref} from "vue";
 
-io.on('message', ({type, data}) => {
-  switch (type) {
-    case 'update:update-available':
-      $q.notify({
-        message: 'Une mise à jour est disponible. Téléchargement en cours ...',
-        color: 'blue',
-        position: 'bottom-right',
-        group: false
-      })
-      break
-    case 'update:update-not-available':
-      $q.notify({
-        message: 'Aucune mise à jour disponible.',
-        color: 'blue',
-        position: 'bottom-right',
-        group: false
-      })
-      break
-    default:
-      break
-  }
-})
+const info: Ref<Partial<AppInfo>> = ref({})
 
 window.app.frontReady()
+
+socket.emit('action:info', (response: AppInfo) => {
+  info.value = response
+})
 </script>
 
 <style scoped>

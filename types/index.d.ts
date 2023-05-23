@@ -1,3 +1,7 @@
+interface AppInfo {
+    version: string
+}
+
 interface GameInfo {
     id: number
     url: string

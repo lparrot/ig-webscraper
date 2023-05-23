@@ -13,7 +13,7 @@
     "dist-electron"
   ],
   "mac": {
-    "artifactName": "${productName}_${version}.${ext}",
+    "artifactName": "${productName}.${ext}",
     "target": [
       "dmg"
     ]
@@ -27,7 +27,7 @@
         ]
       }
     ],
-    "artifactName": "${productName}_${version}.${ext}"
+    "artifactName": "${productName}.${ext}"
   },
   "nsis": {
     "installerIcon": "icon.ico",

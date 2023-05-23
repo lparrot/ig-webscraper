@@ -1,8 +1,16 @@
 import {socket} from "../main";
-import {dialog} from "electron";
+import {app, dialog} from "electron";
 import fs from 'fs'
 
 export const useIoActions = async () => {
+    socket?.on('action:info', async (callback) => {
+        callback = checkCallback(callback)
+
+        await callback({
+            version: app.getVersion()
+        })
+    })
+
     socket?.on('action:message', message => {
         dialog.showMessageBox({
             ...message
@@ -29,8 +37,7 @@ export const useIoActions = async () => {
     })
 
     socket?.on('action:import_file', async (callback) => {
-        callback = typeof callback == "function" ? callback : () => {
-        }
+        callback = checkCallback(callback)
 
         const filename = dialog.showOpenDialogSync({
             title: 'Importer le fichier',
@@ -45,4 +52,9 @@ export const useIoActions = async () => {
             await callback(content)
         }
     })
+}
+
+function checkCallback(callback: any) {
+    return typeof callback == "function" ? callback : () => {
+    }
 }
