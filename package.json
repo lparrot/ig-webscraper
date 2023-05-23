@@ -1,7 +1,7 @@
 {
   "name": "ig-webscraper",
   "description": "IG Webscraper",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "laurent.parrot78@gmail.com",
   "private": true,
   "main": "dist-electron/main.js",
@@ -10,8 +10,8 @@
     "url": "https://github.com/lparrot/ig-webscraper.git"
   },
   "scripts": {
-    "build": "nuxi build --prerender && electron-builder --win --publish never",
-    "deploy": "nuxi build --prerender && electron-builder --win --publish always",
+    "build": "nuxt build --prerender && electron-builder --win --publish never",
+    "deploy": "nuxt build --prerender && electron-builder --win --publish always",
     "deploy:patch": "npm version patch --force && npm run deploy",
     "deploy:minor": "npm version minor --force && npm run deploy",
     "deploy:major": "npm version major --force && npm run deploy",
@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.16.4",
+    "@vueuse/core": "^10.1.2",
     "cheerio": "^1.0.0-rc.12",
     "dexie": "^3.2.3",
     "electron-log": "^4.4.8",

@@ -50,6 +50,7 @@
 <script lang="ts" setup>
 import {load} from "cheerio";
 import {DialogHistoPrice} from "#components";
+import {useIntervalFn} from "@vueuse/core";
 
 interface GameInfoShow extends GameInfo {
   nostock: boolean
@@ -131,10 +132,12 @@ const promptAddGame = async () => {
         }
         const game_info = await addGame(payload)
 
-        const game_to_add = await fetchGame(game_info.id)
+        if (game_info != null) {
+          const game_to_add = await fetchGame(game_info.id)
 
-        if (game_to_add != null) {
-          game_infos.value.push(game_to_add)
+          if (game_to_add != null) {
+            game_infos.value.push(game_to_add)
+          }
         }
       })
 
@@ -168,6 +171,8 @@ const addGame = async (url: string) => {
       img: $(`meta[itemprop="image"]`).attr('content')!!!,
       prices: [info.price!!!],
     })
+  } else {
+    return null
   }
 
   return info
@@ -226,7 +231,13 @@ const fetchGame = async (id: number): Promise<GameInfoShow | null> => {
   }
 }
 
-await fetchPrices()
+const {pause} = useIntervalFn(async () => {
+  await fetchPrices()
+}, 5 * 60 * 1000, {immediateCallback: true})
+
+onBeforeUnmount(() => {
+  pause()
+})
 </script>
 
 <style scoped>
