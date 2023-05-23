@@ -37,8 +37,8 @@
                   color="red" name="north_east"></QIcon>
               <QIcon v-else color="green" name="south_east"></QIcon>
             </div>
-            <div>
-              <span>{{ props.row.prices[props.row.prices.length - 1] }} €</span>
+            <div class="cursor-pointer" @click="onPriceHistoryClick(props.row)">
+              <span>{{ props.row.price?.toFixed(2) }} €</span>
             </div>
           </div>
         </q-td>
@@ -49,9 +49,11 @@
 
 <script lang="ts" setup>
 import {load} from "cheerio";
+import {DialogHistoPrice} from "#components";
 
 interface GameInfoShow extends GameInfo {
   nostock: boolean
+  price: number
 }
 
 const {$db} = useNuxtApp()
@@ -76,6 +78,15 @@ const search = async (query: string) => {
   let search_page = await fetch(`https://www.instant-gaming.com/en/search/?all_types=1&all_cats=1&min_price=0&max_price=100&noprice=1&min_discount=0&max_discount=100&min_reviewsavg=10&max_reviewsavg=100&noreviews=1&available_in=ES&gametype=all&sort_by=&query=${query}&page=1`);
   const content = await search_page.text()
   const $ = load(content)
+}
+
+const onPriceHistoryClick = (game: GameInfo) => {
+  $q.dialog({
+    component: DialogHistoPrice,
+    componentProps: {
+      game
+    }
+  })
 }
 
 const handleDelete = async (game: GameInfoShow) => {
@@ -155,7 +166,7 @@ const addGame = async (url: string) => {
       url,
       name: $('.name .game-title').text(),
       img: $(`meta[itemprop="image"]`).attr('content')!!!,
-      prices: [info.price!!!]
+      prices: [info.price!!!],
     })
   }
 
@@ -210,7 +221,8 @@ const fetchGame = async (id: number): Promise<GameInfoShow | null> => {
 
   return {
     ...game,
-    nostock: info.nostock
+    nostock: info.nostock,
+    price: game.prices[game.prices.length - 1]
   }
 }
 
