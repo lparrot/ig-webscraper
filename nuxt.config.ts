@@ -20,7 +20,7 @@ export default defineNuxtConfig(<NuxtConfig>{
         extras: {
             fontIcons: ['material-icons']
         },
-        plugins: ['Dialog', 'Notify']
+        plugins: ['Dialog', 'Notify', 'Loading']
     },
     experimental: {
         typedPages: true

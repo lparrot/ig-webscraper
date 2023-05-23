@@ -51,6 +51,7 @@
 import {load} from "cheerio";
 import {DialogHistoPrice} from "#components";
 import {useIntervalFn} from "@vueuse/core";
+import {io} from "~/composables/useSocketIo";
 
 interface GameInfoShow extends GameInfo {
   nostock: boolean
@@ -104,7 +105,30 @@ const handleDelete = async (game: GameInfoShow) => {
 }
 
 const handleImport = async () => {
-  alert('Fonctionnalité en cours de développement')
+  $q.loading.show()
+  io.emit('action:import_file', async (response: any) => {
+    if (response == null) {
+      return
+    }
+
+    try {
+      const gameUrls = JSON.parse(response)
+
+      if (Array.isArray(gameUrls)) {
+        await $db.gameInfos.clear()
+        for await (let url of gameUrls) {
+          await addGame(url)
+        }
+      }
+    } finally {
+      $q.loading.hide()
+      await fetchPrices()
+      io.emit('action:message', {
+        title: 'Import terminé',
+        message: 'Import terminé avec succès'
+      })
+    }
+  })
 }
 
 const handleExport = async () => {
@@ -146,7 +170,7 @@ const promptAddGame = async () => {
 
 const getGameInfo = async (url: string): Promise<Omit<GameInfoShow, 'prices'> & { price?: number }> => {
   const page = await $fetch<string>(url, {responseType: 'text'})
-  const $ = load(page)
+  const $ = await load(page)
 
   return {
     id: Number($(`meta[itemprop="sku"]`).attr('content')),
@@ -160,21 +184,21 @@ const getGameInfo = async (url: string): Promise<Omit<GameInfoShow, 'prices'> & 
 
 const addGame = async (url: string) => {
   const page = await $fetch<string>(url, {responseType: 'text'})
-  const $ = load(page)
+  const $ = await load(page)
 
   const info = await getGameInfo(url)
 
-  if (game_infos.value.findIndex(it => it.id === info.id) < 0) {
-    $db.gameInfos.add({
-      id: Number($(`meta[itemprop="sku"]`).attr('content')),
-      url,
-      name: $('.name .game-title').text(),
-      img: $(`meta[itemprop="image"]`).attr('content')!!!,
-      prices: [info.price!!!],
-    })
-  } else {
-    return null
+  if (await $db.gameInfos.get(info.id) != null) {
+    return
   }
+
+  await $db.gameInfos.add({
+    id: Number($(`meta[itemprop="sku"]`).attr('content')),
+    url,
+    name: $('.name .game-title').text(),
+    img: $(`meta[itemprop="image"]`).attr('content')!!!,
+    prices: [info.price!!!],
+  })
 
   return info
 }
