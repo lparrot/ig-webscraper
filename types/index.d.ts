@@ -7,5 +7,7 @@ interface GameInfo {
     url: string
     name: string
     img: string
+  price?: number
     prices: number[]
+  nostock?: boolean
 }

@@ -15,15 +15,15 @@
            bordered dense flat
            row-key="name">
     <template #body="props">
-      <q-tr :props="props">
+      <q-tr :props="props" class="cursor-pointer" @click="onGameRowClick(props.row)">
         <q-td key="actions" :props="props" style="width: 1px">
-          <q-btn color="red" dense icon="delete" size="sm" @click="handleDelete(props.row)"></q-btn>
+          <q-btn color="red" dense icon="delete" size="sm" @click.stop="handleDelete(props.row)"></q-btn>
         </q-td>
         <q-td key="img" :props="props" style="width: 96px">
-          <q-img :src="props.row.img" alt="image" class="cursor-pointer" loading="lazy" @click="openLink(props.row)"/>
+          <q-img :src="props.row.img" alt="image" class="rounded-borders" loading="lazy" @click.stop="openLink(props.row)"/>
         </q-td>
         <q-td key="name" :props="props">
-          <div class="flex items-center q-gutter-xs">
+          <div class="flex items-center no-wrap q-gutter-xs">
             <q-badge v-if="props.row.nostock" color="red" rounded/>
             <q-badge v-else color="green" rounded/>
             <span>{{ props.row.name }}</span>
@@ -33,11 +33,11 @@
           <div class="flex justify-end items-center q-gutter-xs">
             <div v-if="props.row.prices.length > 1">
               <QIcon
-                  v-if="props.row.prices[props.row.prices.length - 1] > props.row.prices[props.row.prices.length - 2]"
-                  color="red" name="north_east"></QIcon>
+                v-if="props.row.prices[props.row.prices.length - 1] > props.row.prices[props.row.prices.length - 2]"
+                color="red" name="north_east"></QIcon>
               <QIcon v-else color="green" name="south_east"></QIcon>
             </div>
-            <div class="cursor-pointer" @click="onPriceHistoryClick(props.row)">
+            <div class="cursor-pointer">
               <span>{{ props.row.price?.toFixed(2) }} €</span>
             </div>
           </div>
@@ -48,24 +48,19 @@
 </template>
 
 <script lang="ts" setup>
-import {load} from "cheerio";
-import {DialogHistoPrice} from "#components";
-import {useIntervalFn} from "@vueuse/core";
+import { load } from 'cheerio'
+import { useIntervalFn } from '@vueuse/core'
+import DialogInfoGame from '~/components/DialogInfoGame.vue'
 
-interface GameInfoShow extends GameInfo {
-  nostock: boolean
-  price: number
-}
-
-const {$db} = useNuxtApp()
+const { $db } = useNuxtApp()
 const $q = useQuasar()
 
-const game_infos = ref<GameInfoShow[]>([])
+const game_infos = ref<GameInfo[]>([])
 
 const columns = ref([
-  {name: 'actions', field: 'actions', label: ''},
-  {name: 'img', field: 'img', label: ''},
-  {name: 'name', field: 'name', label: 'Nom du jeu', sortable: true, align: 'left'},
+  { name: 'actions', field: 'actions', label: '' },
+  { name: 'img', field: 'img', label: '' },
+  { name: 'name', field: 'name', label: 'Nom du jeu', sortable: true, align: 'left' },
   {
     name: 'prices',
     field: 'prices',
@@ -76,31 +71,31 @@ const columns = ref([
 ])
 
 const search = async (query: string) => {
-  let search_page = await fetch(`https://www.instant-gaming.com/en/search/?all_types=1&all_cats=1&min_price=0&max_price=100&noprice=1&min_discount=0&max_discount=100&min_reviewsavg=10&max_reviewsavg=100&noreviews=1&available_in=ES&gametype=all&sort_by=&query=${query}&page=1`);
+  let search_page = await fetch(`https://www.instant-gaming.com/en/search/?all_types=1&all_cats=1&min_price=0&max_price=100&noprice=1&min_discount=0&max_discount=100&min_reviewsavg=10&max_reviewsavg=100&noreviews=1&available_in=ES&gametype=all&sort_by=&query=${query}&page=1`)
   const content = await search_page.text()
-  const $ = load(content)
+  load(content)
 }
 
-const onPriceHistoryClick = (game: GameInfo) => {
+const onGameRowClick = (game: GameInfo) => {
   $q.dialog({
-    component: DialogHistoPrice,
+    component: DialogInfoGame,
     componentProps: {
       game
     }
   })
 }
 
-const handleDelete = async (game: GameInfoShow) => {
+const handleDelete = async (game: GameInfo) => {
   await $q.dialog({
     title: 'Confirmation',
     message: 'Voulez vous supprimer ce jeu de la liste ?',
     cancel: true,
     persistent: true
   })
-      .onOk(async (payload: string) => {
-        await $db.gameInfos.delete(game.id)
-        game_infos.value = game_infos.value.filter(it => it.id !== game.id)
-      })
+    .onOk(async () => {
+      await $db.gameInfos.delete(game.id)
+      game_infos.value = game_infos.value.filter(it => it.id !== game.id)
+    })
 }
 
 const handleImport = async () => {
@@ -131,11 +126,11 @@ const handleImport = async () => {
 }
 
 const handleExport = async () => {
-  const games = await $db.gameInfos.toArray();
+  const games = await $db.gameInfos.toArray()
   socket.emit('action:export_file', games.map(it => it.url))
 }
 
-const openLink = async (game: GameInfoShow) => {
+const openLink = async (game: GameInfo) => {
   await window.app.openLink(game.url)
 }
 
@@ -150,25 +145,25 @@ const promptAddGame = async () => {
     cancel: true,
     persistent: true
   })
-      .onOk(async (payload: string) => {
-        if (payload == null || payload.trim() === '') {
-          return
-        }
-        const game_info = await addGame(payload)
+    .onOk(async (payload: string) => {
+      if (payload == null || payload.trim() === '') {
+        return
+      }
+      const game_info = await addGame(payload)
 
-        if (game_info != null) {
-          const game_to_add = await fetchGame(game_info.id)
+      if (game_info != null) {
+        const game_to_add = await fetchGame(game_info.id)
 
-          if (game_to_add != null) {
-            game_infos.value.push(game_to_add)
-          }
+        if (game_to_add != null) {
+          game_infos.value.push(game_to_add)
         }
-      })
+      }
+    })
 
 }
 
-const getGameInfo = async (url: string): Promise<Omit<GameInfoShow, 'prices'> & { price?: number }> => {
-  const page = await $fetch<string>(url, {responseType: 'text'})
+const getGameInfo = async (url: string): Promise<Omit<GameInfo, 'prices'> & { price?: number }> => {
+  const page = await $fetch<string>(url, { responseType: 'text' })
   const $ = await load(page)
 
   return {
@@ -182,7 +177,7 @@ const getGameInfo = async (url: string): Promise<Omit<GameInfoShow, 'prices'> & 
 }
 
 const addGame = async (url: string) => {
-  const page = await $fetch<string>(url, {responseType: 'text'})
+  const page = await $fetch<string>(url, { responseType: 'text' })
   const $ = await load(page)
 
   const info = await getGameInfo(url)
@@ -234,7 +229,7 @@ const fetchPrices = async () => {
   }
 }
 
-const fetchGame = async (id: number): Promise<GameInfoShow | null> => {
+const fetchGame = async (id: number): Promise<GameInfo | null> => {
   const game = await $db.gameInfos.get(id)
 
   if (game == null) {
@@ -245,7 +240,7 @@ const fetchGame = async (id: number): Promise<GameInfoShow | null> => {
 
   if (game.prices[game.prices.length - 1] !== info.price) {
     game.prices.push(info.price!!!)
-    $db.gameInfos.update(game.id, {prices: game.prices})
+    $db.gameInfos.update(game.id, { prices: game.prices })
   }
 
   return {
@@ -255,9 +250,9 @@ const fetchGame = async (id: number): Promise<GameInfoShow | null> => {
   }
 }
 
-const {pause} = useIntervalFn(async () => {
+const { pause } = useIntervalFn(async () => {
   await fetchPrices()
-}, 5 * 60 * 1000, {immediateCallback: true})
+}, 5 * 60 * 1000, { immediateCallback: true })
 
 onBeforeUnmount(() => {
   pause()
