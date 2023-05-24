@@ -1,7 +1,7 @@
 <template>
   <div class="flex justify-between q-mb-md">
     <div class="flex q-gutter-xs">
-      <q-btn color="blue" icon="refresh" size="sm" unelevated @click="fetchPrices">Rafraichir</q-btn>
+      <q-btn color="blue" icon="refresh" size="sm" unelevated @click="fetchGames">Rafraichir</q-btn>
       <q-btn color="orange" icon="add" size="sm" unelevated @click="promptAddGame">Ajouter jeu</q-btn>
     </div>
     <div class="flex q-gutter-xs">
@@ -13,7 +13,7 @@
 
   <q-table :columns="columns" :pagination="{rowsPerPage: 0, sortBy: 'prices'}" :rows="game_infos" binary-state-sort
            bordered dense flat
-           row-key="name">
+           row-key="id">
     <template #body="props">
       <q-tr :props="props" class="cursor-pointer" @click="onGameRowClick(props.row)">
         <q-td key="actions" :props="props" style="width: 1px">
@@ -66,7 +66,7 @@ const columns = ref([
     field: 'prices',
     label: 'Prix',
     sortable: true,
-    sort: (a: number[], b: number[]) => (a[a.length - 1]) - (b[b.length - 1])
+    sort: (a: number[], b: number[]) => (a[ a.length - 1 ]) - (b[ b.length - 1 ])
   },
 ])
 
@@ -77,11 +77,15 @@ const search = async (query: string) => {
 }
 
 const onGameRowClick = (game: GameInfo) => {
-  $q.dialog({
+  const dialog = $q.dialog({
     component: DialogInfoGame,
     componentProps: {
-      game
-    }
+      game,
+      handleClearHistory: async (game: GameInfo) => {
+        await clearPriceHistory(game)
+        dialog.hide()
+      }
+    },
   })
 }
 
@@ -116,7 +120,7 @@ const handleImport = async () => {
       }
     } finally {
       $q.loading.hide()
-      await fetchPrices()
+      await fetchGames()
       socket.emit('action:message', {
         title: 'Import terminé',
         message: 'Import terminé avec succès'
@@ -152,17 +156,19 @@ const promptAddGame = async () => {
       const game_info = await addGame(payload)
 
       if (game_info != null) {
-        const game_to_add = await fetchGame(game_info.id)
-
-        if (game_to_add != null) {
-          game_infos.value.push(game_to_add)
-        }
+        game_infos.value.push(game_info)
       }
     })
 
 }
 
-const getGameInfo = async (url: string): Promise<Omit<GameInfo, 'prices'> & { price?: number }> => {
+const clearPriceHistory = async (game: GameInfo) => {
+  await $db.gameInfos.delete(game.id)
+  await addGame(game.url)
+  await fetchGames()
+}
+
+const getGameInfo = async (url: string): Promise<GameInfo> => {
   const page = await $fetch<string>(url, { responseType: 'text' })
   const $ = await load(page)
 
@@ -172,7 +178,8 @@ const getGameInfo = async (url: string): Promise<Omit<GameInfo, 'prices'> & { pr
     name: $('.name .game-title').text(),
     img: $(`meta[itemprop="image"]`).attr('content')!!!,
     nostock: $('.subinfos .nostock').length > 0,
-    price: Number($(`meta[itemprop="price"]`).attr('content'))
+    price: Number($(`meta[itemprop="price"]`).attr('content')),
+    prices: []
   }
 }
 
@@ -216,7 +223,7 @@ if (await $db.gameInfos.count() === 0) {
   }
 }
 
-const fetchPrices = async () => {
+const fetchGames = async () => {
   game_infos.value = []
   const games = await $db.gameInfos.toArray()
 
@@ -238,7 +245,7 @@ const fetchGame = async (id: number): Promise<GameInfo | null> => {
 
   const info = await getGameInfo(game.url)
 
-  if (game.prices[game.prices.length - 1] !== info.price) {
+  if (game.prices[ game.prices.length - 1 ] !== info.price) {
     game.prices.push(info.price!!!)
     $db.gameInfos.update(game.id, { prices: game.prices })
   }
@@ -246,12 +253,12 @@ const fetchGame = async (id: number): Promise<GameInfo | null> => {
   return {
     ...game,
     nostock: info.nostock,
-    price: game.prices[game.prices.length - 1]
+    price: game.prices[ game.prices.length - 1 ]
   }
 }
 
 const { pause } = useIntervalFn(async () => {
-  await fetchPrices()
+  await fetchGames()
 }, 5 * 60 * 1000, { immediateCallback: true })
 
 onBeforeUnmount(() => {

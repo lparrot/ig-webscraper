@@ -1,5 +1,9 @@
 <script lang="ts" setup>
-const props = withDefaults(defineProps<{ game?: GameInfo }>(), {})
+const props = withDefaults(defineProps<{
+  game?: GameInfo,
+  handleClearHistory?: (game: GameInfo) => void
+}>(), {})
+
 
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const $q = useQuasar()
@@ -22,7 +26,14 @@ const $q = useQuasar()
       </q-card-section>
 
       <q-card-section class="col">
-        <div class="text-h6">Historique des prix</div>
+        <div class="flex items-center q-gutter-sm text-h6">
+          <div>
+            <span>Historique des prix</span>
+          </div>
+          <div v-if="game?.prices.length > 1">
+            <q-btn color="red" icon="delete" size="xs" @click="props.handleClearHistory(game!)">Vider</q-btn>
+          </div>
+        </div>
 
         <q-list class="rounded-borders" dense padding separator>
           <q-item v-for="price in game?.prices">
