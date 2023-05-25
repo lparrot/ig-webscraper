@@ -31,7 +31,7 @@ const $q = useQuasar()
             <span>Historique des prix</span>
           </div>
           <div v-if="game?.prices.length > 1">
-            <q-btn color="red" icon="delete" size="xs" @click="props.handleClearHistory(game!)">Vider</q-btn>
+            <q-btn color="red" flat icon="delete" size="xs" @click="props.handleClearHistory(game!)">Vider</q-btn>
           </div>
         </div>
 

@@ -82,8 +82,8 @@ const onGameRowClick = (game: GameInfo) => {
     componentProps: {
       game,
       handleClearHistory: async (game: GameInfo) => {
-        await clearPriceHistory(game)
         dialog.hide()
+        await clearPriceHistory(game)
       }
     },
   })
